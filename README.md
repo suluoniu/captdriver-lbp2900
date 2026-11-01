@@ -4,10 +4,40 @@ A fork of [agalakhov/captdriver](https://github.com/agalakhov/captdriver) carryi
 the fixes needed to make a **Canon LBP2900** actually print on Linux through CUPS,
 instead of receiving a full job and silently sitting there.
 
-> Tested on Raspberry Pi 4 / Ubuntu Server 24.04 (arm64) / CUPS 2.4.16 with a
+> Tested on Raspberry Pi 4 / Ubuntu Server 26.10 (arm64) / CUPS 2.4.16 with a
 > Canon LBP2900 over USB, shared to iOS, Android and HarmonyOS clients over IPP.
 > Every page now comes out, and the job ends instead of hanging in
 > "printing" forever.
+
+---
+
+## Quick install (no compiler needed)
+
+Prebuilt arm64 binaries are attached to the
+[latest release](https://github.com/suluoniu/captdriver-lbp2900/releases/latest):
+
+```sh
+wget https://github.com/suluoniu/captdriver-lbp2900/releases/download/v1.0.0/capt-lbp2900_1.0.0_arm64.deb
+sudo dpkg -i capt-lbp2900_1.0.0_arm64.deb
+sudo lpadmin -p LBP2900 -E -v usb://Canon/LBP2900 \
+     -P /usr/share/cups/model/Canon-LBP2900.ppd \
+     -o printer-is-shared=true
+sudo cupsenable LBP2900 && sudo cupsaccept LBP2900
+```
+
+Requirements: aarch64 and glibc >= 2.34 (Ubuntu 22.04+, Debian 12+, Raspberry Pi
+OS Bookworm or newer). On x86_64 or anything else, build from source — see
+[Build](#build).
+
+The package installs the filter to `/usr/lib/cups/filter/rastertocapt`, keeps any
+previous filter as `rastertocapt.pre-capt-lbp2900`, drops the PPD into
+`/usr/share/cups/model/`, and restarts CUPS if it is running. Prefer not to use a
+package? The bare binary is in the same release:
+
+```sh
+sudo install -m 755 rastertocapt-1.0.0-linux-arm64 /usr/lib/cups/filter/rastertocapt
+sudo systemctl restart cups
+```
 
 ---
 

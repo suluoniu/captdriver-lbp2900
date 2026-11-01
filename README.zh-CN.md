@@ -3,9 +3,37 @@
 这是 [agalakhov/captdriver](https://github.com/agalakhov/captdriver) 的 fork，
 带上了让 **Canon LBP2900** 在 Linux 上真正打得出纸所需的修复。
 
-> 实测环境：树莓派 4 / Ubuntu Server 24.04 (arm64) / CUPS 2.4.16，
+> 实测环境：树莓派 4 / Ubuntu Server 26.10 (arm64) / CUPS 2.4.16，
 > LBP2900 走 USB，通过 IPP 共享给 iOS、Android 和鸿蒙客户端。
 > 现在每页都能打出来，作业也会正常结束，不会永远卡在"正在打印"。
+
+---
+
+## 快速安装（不用编译）
+
+预编译的 arm64 二进制发布在
+[最新 Release](https://github.com/suluoniu/captdriver-lbp2900/releases/latest)：
+
+```sh
+wget https://github.com/suluoniu/captdriver-lbp2900/releases/download/v1.0.0/capt-lbp2900_1.0.0_arm64.deb
+sudo dpkg -i capt-lbp2900_1.0.0_arm64.deb
+sudo lpadmin -p LBP2900 -E -v usb://Canon/LBP2900 \
+     -P /usr/share/cups/model/Canon-LBP2900.ppd \
+     -o printer-is-shared=true
+sudo cupsenable LBP2900 && sudo cupsaccept LBP2900
+```
+
+环境要求：aarch64 架构、glibc ≥ 2.34（Ubuntu 22.04+、Debian 12+、树莓派 OS
+Bookworm 及以上）。x86_64 或其他架构请从源码编译，见下文「编译」。
+
+这个包会把过滤器装到 `/usr/lib/cups/filter/rastertocapt`，原有过滤器备份为
+`rastertocapt.pre-capt-lbp2900`，PPD 放进 `/usr/share/cups/model/`，并在 CUPS
+运行时自动重启它。不想用 deb 也可以直接装裸二进制：
+
+```sh
+sudo install -m 755 rastertocapt-1.0.0-linux-arm64 /usr/lib/cups/filter/rastertocapt
+sudo systemctl restart cups
+```
 
 ---
 
